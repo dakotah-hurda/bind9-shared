@@ -23,7 +23,7 @@ Below is a 'roadmap' for finding stuff around the repo:
 | DOCKER_HOSTNAME | var | Hostname/IP of your Docker server |
 | DOCKER_USERNAME | var | Management username of your Docker server admin |
 | DOCKER_WORKSPACE | var | Directory where this repo will be cloned to on the Docker server, e.g. ' /home/dockeradmin/repos/bind9-shared'
-| DOCKER_PASSWROD | secret | Admin password | 
+| DOCKER_PASSWORD | secret | Admin password | 
 | SSH_PRIVATE_KEY | secret | Used for SSH key-based authentication between Runner server and Docker server. 
 
 5. You may need to update the [bind9 config templates](https://github.com/dakotah-hurda/bind9-shared/tree/main/data/bind9/templates) to match [your own DNS config.](https://bind9.readthedocs.io/en/latest/chapter3.html) I kept these pretty barebones. 
