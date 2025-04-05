@@ -1,0 +1,38 @@
+name: Validate Data
+on:
+  push: # Use 'on push' to enforce these validators BEFORE making a PR. 
+    branches:
+      - '!main'
+      - '*'
+
+jobs:
+
+  validate_data:
+    runs-on: self-hosted
+
+    steps:
+      - name: Clean folder
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
+
+      - name: Checkout PR Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all commits
+
+      - name: Build Python Environment in Docker Container
+        run: |
+          cd ${{ github.workspace }}/src/setup
+          docker build -t python:homelab-python .
+      
+      - name: Run Pytests
+        run: |
+          cd ${{ github.workspace }}
+          docker run --rm --name generate_bind9_configs.py \
+          -v "$PWD":/usr/src/ \
+          -w /usr/src/tests \
+          python:homelab-python \
+          python -B -m pytest -p no:cacheprovider

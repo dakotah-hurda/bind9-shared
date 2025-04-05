@@ -1,0 +1,50 @@
+name: Restart Docker Services
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - docker/*
+
+jobs:
+  sync_repo_with_clients:
+    runs-on: self-hosted
+
+    steps:
+      - name: Cleanup build folder and clone clean repo
+        run: |
+          pwd
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: 'main'
+
+      - name: Sync Repo with Docker Server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ vars.DOCKER_HOSTNAME }}
+          username: ${{ vars.DOCKER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/dockerman/repos/homelab
+            git pull
+
+      - name: Restart Docker Services In Order
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ vars.DOCKER_HOSTNAME }}
+          username: ${{ vars.DOCKER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/dockerman/repos/homelab/docker
+            docker compose --profile "*" down
+            docker compose --profile "1-infra" up  -d
+            docker compose --profile "*" up  -d

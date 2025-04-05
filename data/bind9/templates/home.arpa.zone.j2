@@ -1,0 +1,19 @@
+$TTL 2d
+$ORIGIN home.arpa.
+
+@       IN      SOA     ns1.home.arpa.      admin.home.arpa. (
+    20241016    ; serial number
+    3600        ; refresh period
+    600         ; retry period
+    604800      ; expire time 
+    1800        ; negative TTL
+)
+
+; Identifies the root DNS server of this zone. Recursive lookup to the entry below.
+@       IN      NS      ns1.home.arpa.
+ns1     IN      A       192.168.20.100
+
+; Add DNS entries below this line
+{% for entry in dns_records -%}
+{{ entry.name }}      IN      A       {{ entry.ip }}
+{% endfor %}

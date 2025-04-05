@@ -1,0 +1,39 @@
+acl internal {
+        192.168.0.0/16;
+        localhost;
+        localnets;
+};
+
+options {
+
+    # Defines what directory all the BIND config files will be stored in.
+    directory "/var";
+
+    # Upstream DNS server IPs. 
+    forwarders {
+            71.10.216.1;
+            71.10.216.2;
+    };
+
+    # Enables recursive DNS lookups? I think?
+    recursion yes; 
+
+    # Disabled DNSSEC. Should enable this eventually. :)
+    dnssec-validation no; 
+
+    # Ties in the "interna" ACL configured above.
+    allow-query { internal; }; 
+};
+
+zone "home.arpa" IN {
+    # Identifies that DNS queries for this zone don't need to be forwarded; I'm the master!
+    type master;
+
+    # The zone-file for this zone. Essentially, the config for the Zone.
+    file "/etc/bind/home.arpa.zone";
+};
+
+zone "168.192.in-addr.arpa" IN {
+    type master;
+    file "/etc/bind/db.192.168";
+};

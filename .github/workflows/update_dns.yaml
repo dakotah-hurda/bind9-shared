@@ -1,0 +1,81 @@
+name: Update DNS Entries
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+        - data/bind9/**
+
+jobs:
+  
+  build_bind_configs:
+    runs-on: self-hosted
+
+    steps:
+        - name: Clean folder
+          run: |
+            pwd
+            ls -la ./
+            rm -rf ./* || true
+            rm -rf ./.??* || true
+            ls -la ./
+
+        - name: Clone repo
+          uses: actions/checkout@v4
+          with:
+            ref: 'main'
+
+        - name: Build Python Environment in Docker Container
+          run: |
+            
+            cd ${{ github.workspace }}/src/setup
+            docker build -t python:homelab-python .
+
+        - name: Generate Config File Artifacts via Python
+          run: |
+            cd ${{ github.workspace }}
+            docker run --rm --name generate_bind9_configs.py \
+            -v "$PWD":/usr/src/ \
+            -w /usr/src/data/bind9 \
+            python:homelab-python \
+            python -u generate_bind9_configs.py
+
+        - name: Archive Artifact - Config File
+          uses: actions/upload-artifact@v4
+          with:
+            name: bind9-config-files
+            path: |
+                ${{ github.workspace }}/data/artifacts/
+
+  deliver_bind_configs:
+    runs-on: self-hosted
+    needs: build_bind_configs
+
+    steps:
+      - name: Download Config Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: bind9-config-files
+          path: config
+      
+      - name: Transfer Files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.DOCKER_HOSTNAME }}
+          username: ${{ vars.DOCKER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: config/*
+          target: /home/dockerman/repos/homelab/docker/bind9
+
+      - name: Restart Docker Containers
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ vars.DOCKER_HOSTNAME }}
+          username: ${{ vars.DOCKER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/dockerman/repos/homelab/docker
+            docker compose down bind9 && docker compose up bind9 -d

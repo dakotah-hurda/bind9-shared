@@ -1,0 +1,19 @@
+;
+; BIND reverse data file for home.arpa zone
+;
+$TTL    604800
+@       IN      SOA     ns1.home.arpa. admin.home.arpa. (
+  2         ; Serial
+  604800         ; Refresh
+  86400         ; Retry
+  2419200         ; Expire
+  604800 )       ; Negative Cache TTL
+;
+
+@       IN      NS      ns1.
+100.20  IN      PTR     ns1.home.arpa.
+
+; Add PTR records below this line
+{% for entry in dns_records -%}
+{{ entry.ptr }}      IN      PTR       {{ entry.name }}.home.arpa.
+{% endfor %}
