@@ -1,3 +1,5 @@
 dns_records:
 - ip: 192.168.10.1
-  name: examplehostname #(no domain name needed)
+  name: examplehostname # no domain suffix needed
+- ip: 192.168.10.2
+  name: examplehostname2 # no domain suffix needed

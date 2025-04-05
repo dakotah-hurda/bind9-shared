@@ -67,7 +67,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: config/*
-          target: /home/dockerman/repos/homelab/docker/bind9
+          target: ${{ vars.DOCKER_WORKSPACE }}/docker/bind9
 
       - name: Restart Docker Containers
         uses: appleboy/ssh-action@v1.1.0
@@ -77,5 +77,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /home/dockerman/repos/homelab/docker
+            cd ${{ vars.DOCKER_WORKSPACE }}/docker
             docker compose down bind9 && docker compose up bind9 -d
